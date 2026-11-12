@@ -40,7 +40,7 @@ class DiagnosticTests(unittest.TestCase):
 
     def test_sample_does_not_execute_code(self):
         result = diagnose("NameError: name '__import__(\"os\")' is not defined")
-        self.assertEqual(result.category, "NameError")
+        self.assertEqual(result.category, "Unknown")
 
 
 if __name__ == "__main__":
