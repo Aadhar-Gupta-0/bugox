@@ -83,13 +83,18 @@ def diagnose(text: str) -> Diagnostic:
         js = re.findall(r"(?<!\d):(\d+):\d+\)?", clean)
         if js:
             line_number = int(js[-1])
-    # Prefer specific JavaScript property errors before generic TypeError.
+    # Tracebacks may contain chained exceptions; the final matching error is
+    # generally the one the runtime reports as the immediate failure. Prefer
+    # the specific JS property-access pattern if multiple patterns start there.
     ordered = [PATTERNS[-1], *PATTERNS[:-1]]
-    for category, pattern, title, guidance in ordered:
-        match = re.search(pattern, clean, flags=re.I)
-        if match:
-            excerpt = next((line.strip() for line in reversed(lines) if re.search(pattern, line, flags=re.I)), "")
-            return Diagnostic(category, title, guidance, excerpt[:300], line_number, "pattern_match")
+    candidates = []
+    for priority, (category, pattern, title, guidance) in enumerate(ordered):
+        for match in re.finditer(pattern, clean, flags=re.I):
+            candidates.append((match.start(), -priority, category, pattern, title, guidance))
+    if candidates:
+        _, _, category, pattern, title, guidance = max(candidates)
+        excerpt = next((line.strip() for line in reversed(lines) if re.search(pattern, line, flags=re.I)), "")
+        return Diagnostic(category, title, guidance, excerpt[:300], line_number, "pattern_match")
     return Diagnostic(
         "Unknown", "Further context required",
         "Read the last error line, reproduce with minimal input, and inspect the nearest stack frame. "
