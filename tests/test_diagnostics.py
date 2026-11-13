@@ -26,11 +26,11 @@ class DiagnosticTests(unittest.TestCase):
 
     def test_chained_traceback_reports_terminal_error(self):
         traceback = (
-            'Traceback (most recent call last):\\n'
-            'NameError: name \'previous\' is not defined\\n'
-            'During handling of the above exception, another exception occurred:\\n'
-            'Traceback (most recent call last):\\n'
-            'TypeError: unsupported operand type(s)\\n'
+            'Traceback (most recent call last):\n'
+            'NameError: name \'previous\' is not defined\n'
+            'During handling of the above exception, another exception occurred:\n'
+            'Traceback (most recent call last):\n'
+            'TypeError: unsupported operand type(s)\n'
         )
         self.assertEqual(diagnose(traceback).category, 'TypeError')
 
