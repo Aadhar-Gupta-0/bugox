@@ -24,6 +24,20 @@ class DiagnosticTests(unittest.TestCase):
         result = diagnose("TypeError: Cannot read properties of undefined (reading 'name')")
         self.assertEqual(result.category, "TypeErrorJS")
 
+    def test_chained_traceback_reports_terminal_error(self):
+        traceback = (
+            'Traceback (most recent call last):\\n'
+            'NameError: name \'previous\' is not defined\\n'
+            'During handling of the above exception, another exception occurred:\\n'
+            'Traceback (most recent call last):\\n'
+            'TypeError: unsupported operand type(s)\\n'
+        )
+        self.assertEqual(diagnose(traceback).category, 'TypeError')
+
+    def test_specific_js_type_error_precedes_generic_match(self):
+        text = "TypeError: Cannot read properties of undefined (reading 'name')"
+        self.assertEqual(diagnose(text).category, 'TypeErrorJS')
+
     def test_unknown_error_does_not_hallucinate(self):
         self.assertEqual(diagnose("Unusual service response").confidence, "unclassified")
 
